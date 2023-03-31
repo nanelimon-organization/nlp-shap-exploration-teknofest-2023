@@ -17,7 +17,7 @@ Bu nedenle, **mavi** renkli özellikler ve kelimeler, tahmin edilen sınıfı d�
 
 ### Aşağıdaki Tabloda Yer Alan Örnekler ile Modelimizin Sınıflandırma Performansını SHAP Analizi Yöntemiyle Değerlendiriyoruz:
 
-* Örnekler tamamiyle, modelin yanlış tahmin yaptığı örneklerden oluşur. Bu örnekler, modelin neden hatalı tahmin yaptığını anlamak için incelenir.
+* Örneklerin bir kısmı modelin yanlış tahmin yaptığı örneklerden oluşur. Bu örnekler, modelin neden hatalı tahmin yaptığını anlamak için incelenir.
 * Tercih edilen örneklerin tamamına ulaşmak için lütfen [tıklayınız.](https://github.com/Teknofest-Nane-Limon/nlp-shap-exploration-teknofest-2023/blob/main/dataset/shap.csv)
 
 |text|target|
@@ -46,9 +46,9 @@ shap_values = explainer(shap_df['text'][:])
 sp.plots.text(shap_values)
 ```
 
-### Örneklemler: 
+### Yanlış Etiketlenmiş Örneklemler | RACIST Sınıfı : 
 
-* Örneğin: "Berlin düşüp faşizm kaybettikten sonra Kızıl Ordu askerlerinin teca.. pardon özgürleştirdiği kadınlar..." ifadesi, model tarafından RACIST olarak etiketlenmiştir. Ancak bu ifade, ırkçılıkla ilgili aşağılayıcı bir söylem içermemektedir.
+Örneğin: "Berlin düşüp faşizm kaybettikten sonra Kızıl Ordu askerlerinin teca.. pardon özgürleştirdiği kadınlar..." ifadesi, model tarafından RACIST olarak etiketlenmiştir. Ancak bu ifade, ırkçılıkla ilgili aşağılayıcı bir söylem içermemektedir.
 
 https://user-images.githubusercontent.com/83168207/228993692-bf1e10e9-4371-4878-a5a1-f705113be056.mov
 
@@ -59,3 +59,53 @@ Shap analizi, modelin karar verme sürecindeki her öznitelik için bir önem de
 Sonuç olarak, Shap analiz sonuçları, modelin "Berlin düşüp faşizm kaybettikten sonra Kızıl Ordu askerlerinin teca.. pardon özgürleştirdiği kadınlar..." ifadesini yanlış şekilde "RACIST" olarak etiketlediğini göstermektedir. Analiz sonuçları, modelin sınıflandırma kararlarını daha doğru hale getirmek için daha net ve kapsamlı eğitim verileri kullanılması gerektiğini vurgulamaktadır.
 
 ---
+
+Bir başka örnek ise; "*Sakallı lavuk trans kız olduğunu iddia eden tweet atar* Maksimum 30takipcili Sünni hetero anon erkekler" Bu ifade, model tarafından "RACIST" olarak yanlış etiketlenmiştir. Analiz sonuçlarına bakıldığında, "Sunni" kelimesinin oldukça yüksek bir önem derecesine sahip olduğu (0.971) ve modelin bu kelimeyi yanlış anladığı görülmektedir.
+
+https://user-images.githubusercontent.com/83168207/229002765-397e10ad-b1cc-4f6d-b8e8-af25e11ba674.mov
+
+
+Ancak, "Sunni" kelimesinin kullanımı bu ifadede ırkçı veya ayrımcı bir söylemi içermemektedir. Bu ifadede, "Sünni hetero anon erkekler" kavramı, belirli bir gruba yönelik bir açıklama olarak kullanılmıştır ve bu ifade içinde herhangi bir ayrımcı, ırkçı veya nefret söylemi bulunmamaktadır.
+
+Bu nedenle, modelin bu ifadeyi "RACIST" olarak etiketlemesi yanlış bir sonuçtur ve yine bu tür hataların önlenmesi için daha net ve kapsamlı eğitim verilerinin kullanılması gerekmektedir. Modelin, kelime kullanımı içindeki bağlamı daha iyi anlamasını sağlayacak şekilde eğitilmesi gerekmektedir.
+
+---
+
+
+### Shap Analizi ile RACIST Sınıfındaki Özniteliklerin Etkisi ve Modelin Yanlış Etiketleme Sorunu
+
+
+Shapley değerleri, makine öğrenmesi modellerindeki her bir özniteliğin sınıflandırma sonucundaki önemini belirlemek için kullanılan bir yöntemdir. Bu değerler, her öznitelik için hesaplanan Shap değerlerinin ortalamasını temsil eder. `Shap.plots.bar()` fonksiyonu ise, bu Shapley değerlerini bar grafiği şeklinde görselleştirir. Bu fonksiyon, her öznitelik için Shap değerlerini bir çubuk grafikte gösterir. Bu grafik, özniteliklerin sınıflandırma kararında ne kadar önemli olduğunu gösterir.
+
+Bu örnekte, RACIST sınıfındaki özniteliklerin etkisini belirlemek için `Shap.plots.bar()` işleviyle incelenmiştir. Analiz sonucunda, "Sunni" kelimesinin en etkili öznitelik olduğu (0.97), diğer öznitelikler arasında "fas kelimesi" (0.49), "abd kelimesi" (0.46), "turk kelimesi" (0.4) ve "araplar kelimesi" (0.44) gibi değerler yakaladığı gözlemlenmiştir:
+
+```python
+$   sp.plots.bar(shap_values[:,:,3].mean(0), order= sp.Explanation.argsort.flip);
+```
+
+<img width="1026" alt="Ekran Resmi 2023-03-31 05 01 45" src="https://user-images.githubusercontent.com/83168207/229005215-2aaf828c-39b3-4722-84f4-93a848462a83.png">
+
+
+
+Bu sonuçlar, modelin sınıflandırma kararını belirlemede "Sunni" kelimesinin diğer özniteliklere göre daha önemli olduğunu gösterir. Ancak, bu sonuçlar da göstermektedir ki, modelin RACIST sınıfını belirlerken sadece bir kelimeye dayanarak yanlış etiketleme yapabileceği.
+
+Özet olarak, daha doğru sınıflandırma kararları almak için modelin daha kapsamlı bir eğitim verisiyle eğitilmesi gerekmektedir. Ayrıca, modelin kelime kullanımı içindeki bağlamı daha iyi anlaması için eğitilmesi de önemlidir.
+
+
+---
+
+### Sonuç: 
+
+Bu çalışma, Teknofest 2023 Doğal Dil İşleme yarışması için gerçekleştirilen bir SHAP Analizi çalışmasını ele almaktadır. Shap Analizi yöntemi kullanılarak modelin tahminlerinin nasıl oluşturulduğu açıklanmıştır.
+
+Bu çalışma kapsamında yer alan örneklemlerin sadece bir kısmı modelin yanlış tahmin yaptığı örneklerden oluşur. Örneklemler üzerinde yapılan analizin tamamına ulaşmak için notebook'u inceleyebilirsiniz. 
+
+Bunun yanı sıra, çalışmanın sınırlılıkları da göz önünde bulundurulmalıdır. Örneklem verilerinin sınırlı olması nedeniyle, elde edilen sonuçların genelleştirilebilirliği sınırlıdır. Ayrıca, çalışmada kullanılan yöntemin avantajları ve dezavantajları da ayrıca dikkate alınmalıdır. Belirlenen örnekler, incelenerek modelin hatalı tahminlerinin anlaşılmaya çalışıldığı bu çalışma kapsamında, model performansının iyileştirilmesi için SHAP değerleri hesaplanarak görselleştirilmiştir. Bu sayede, RACIST sınıfındaki özniteliklerin etkisi ve modelin yanlış etiketleme sorunu incelenmiştir. Bağımlı değişkenin sınıflarının her biri ayrı ayrı ele alınmış ve incelenmiştir. Shapley değerleri kullanılarak her bir öznitelik için sınıflandırmada ne kadar önemli olduğu belirlenmiştir. Analiz sonuçları, modelin sınıflandırma kararını belirlemede bazı kelime özniteliklerinin diğerlerine göre daha önemli olduğunu gösterirken, modelin sınıflandırma kararlarında hatalı sonuçlar verebildiği gözlemlenmiştir. Gerçekleştirilen SHAP Analizi sonucunda, modelin sınıflandırma kararlarını daha doğru hale getirmek için verisetinin güçlendirilebileceği ve modelin yeniden eğitimlesi gerektiği kanatine ulaşılmıştır. 
+
+Sonuç olarak, Shap Analizi yöntemi kullanılarak modelin sınıflandırma performansının analiz edilmesini ve iyileştirilmesini sağlayan bir çalışma yürütülmüştür... 
+
+
+SHAP Analizi ile ilgili daha fazla bilgi edinmek için daha önce bu konuyla ilgili yazmış olduğum 
+[Medium yazısına](https://medium.com/@tarikkaan1koc/shap-analizi-shap-de%C4%9Ferleriyle-makine-%C3%B6%C4%9Frenimi-modelleri-nas%C4%B1l-yorumlan%C4%B1r-e95710e4aa0c) ve/veya [Shap Library dokümantasyona](https://shap.readthedocs.io/en/latest/index.html) göz atabilirsiniz.
+
+
